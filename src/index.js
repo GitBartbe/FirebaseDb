@@ -2,10 +2,11 @@ import { initializeApp } from "firebase/app";
 import {
   getFirestore,
   collection,
-  getDocs,
+  onSnapshot,
   addDoc,
   deleteDoc,
   doc,
+  query, where
 } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -28,19 +29,21 @@ const db = getFirestore();
 
 const colRef = collection(db, "books");
 
-//get collection data
+//queries
 
-getDocs(colRef)
-  .then((snapshot) => {
-    let books = [];
-    snapshot.docs.forEach((doc) => {
-      books.push({ ...doc.data(), id: doc.id });
-    });
-    console.log(books);
-  })
-  .catch((err) => {
-    console.log(err.message);
+const q = query(colRef, where("author", "==" , "patrick rothfuss"))
+
+// realtime get collection data
+
+
+
+onSnapshot(q, (snapshot)=> {
+  let books = [];
+  snapshot.docs.forEach((doc) => {
+    books.push({ ...doc.data(), id: doc.id });
   });
+  console.log(books);
+})
 
 //adding documents
 
@@ -51,10 +54,11 @@ addBookForm.addEventListener("submit", (e) => {
   addDoc(colRef, {
     title: addBookForm.title.value,
     author: addBookForm.author.value,
-  }).then(() => {
-    console.log();
-  });
-});
+  })
+  .then(() => {
+    addBookForm.reset()
+  })
+})
 
 //deleting document
 
